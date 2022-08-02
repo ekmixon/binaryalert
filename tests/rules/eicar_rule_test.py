@@ -27,7 +27,7 @@ class EicarRuleTest(unittest.TestCase):
 
     def test_match_eicar_with_trailing_spaces(self):
         """Trailing whitespace is allowed after the EICAR string."""
-        matches = self.eicar_rule.match(data='{}    \n\t'.format(self.eicar_string))
+        matches = self.eicar_rule.match(data=f'{self.eicar_string}    \n\t')
         self.assertEqual(
             ['eicar_av_test', 'eicar_substring_test'],
             [match.rule for match in matches]
@@ -35,7 +35,7 @@ class EicarRuleTest(unittest.TestCase):
 
     def test_no_match_if_eicar_is_not_beginning(self):
         """No match for eicar_av_test if EICAR string is not the beginning of the file."""
-        matches = self.eicar_rule.match(data='other-text {}'.format(self.eicar_string))
+        matches = self.eicar_rule.match(data=f'other-text {self.eicar_string}')
         self.assertEqual(
             ['eicar_substring_test'],
             [match.rule for match in matches]
@@ -43,7 +43,7 @@ class EicarRuleTest(unittest.TestCase):
 
     def test_no_match_if_eicar_is_not_end(self):
         """No match for eicar_av_test if non-whitespace comes after the EICAR string."""
-        matches = self.eicar_rule.match(data='{} other-text'.format(self.eicar_string))
+        matches = self.eicar_rule.match(data=f'{self.eicar_string} other-text')
         self.assertEqual(
             ['eicar_substring_test'],
             [match.rule for match in matches]

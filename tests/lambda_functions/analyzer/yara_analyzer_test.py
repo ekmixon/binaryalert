@@ -64,7 +64,7 @@ class YaraAnalyzerTest(fake_filesystem_unittest.TestCase):
     @staticmethod
     def _rule_id(match):
         """Convert a YARA match into a string rule ID (file_name:rule_name)."""
-        return '{}:{}'.format(match.rule_namespace, match.rule_name)
+        return f'{match.rule_namespace}:{match.rule_name}'
 
     @staticmethod
     def _assert_subprocess_calls(mock_subprocess: mock.MagicMock):

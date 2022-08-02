@@ -24,9 +24,7 @@ class MockBinary:
         self.properties = dict(kwargs)
 
     def __getattr__(self, attr: str):
-        if attr == 'file':
-            return io.BytesIO(self.contents)
-        return self.properties[attr]
+        return io.BytesIO(self.contents) if attr == 'file' else self.properties[attr]
 
 
 class MainTest(fake_filesystem_unittest.TestCase):

@@ -191,7 +191,7 @@ class BinaryAlertConfigTestFakeFilesystem(FakeFilesystemBase):
         with open(CONFIG_FILE) as config_file:
             raw_data = config_file.read()
             for i in range(1, 6):
-                self.assertIn('comment{}'.format(i), raw_data)
+                self.assertIn(f'comment{i}', raw_data)
 
         new_config = BinaryAlertConfig()
         self.assertEqual(True, new_config._config['force_destroy'])

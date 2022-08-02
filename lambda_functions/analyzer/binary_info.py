@@ -24,19 +24,21 @@ class BinaryInfo:
         """
         self.bucket_name = bucket_name
         self.object_key = object_key
-        self.s3_identifier = 'S3:{}:{}'.format(bucket_name, object_key)
+        self.s3_identifier = f'S3:{bucket_name}:{object_key}'
 
         self.download_path = os.path.join(
-            tempfile.gettempdir(), 'binaryalert_{}'.format(uuid.uuid4()))
+            tempfile.gettempdir(), f'binaryalert_{uuid.uuid4()}'
+        )
+
         self.yara_analyzer = yara_analyzer
 
         # Computed after file download and analysis.
         self.download_time_ms = 0.0
         self.s3_last_modified = ''
-        self.s3_metadata: Dict[str, str] = dict()
+        self.s3_metadata: Dict[str, str] = {}
         self.computed_md5 = ''
         self.computed_sha = ''
-        self.yara_matches: List[YaraMatch] = list()
+        self.yara_matches: List[YaraMatch] = []
 
     def __str__(self) -> str:
         """Use the S3 identifier as the string representation of the binary."""
@@ -77,8 +79,10 @@ class BinaryInfo:
     @property
     def matched_rule_ids(self) -> Set[str]:
         """A set of 'yara_file:rule_name' for each YARA match."""
-        return set('{}:{}'.format(match.rule_namespace, match.rule_name)
-                   for match in self.yara_matches)
+        return {
+            f'{match.rule_namespace}:{match.rule_name}'
+            for match in self.yara_matches
+        }
 
     @property
     def filepath(self) -> str:
@@ -120,15 +124,20 @@ class BinaryInfo:
     def summary(self) -> Dict[str, Any]:
         """Generate a summary dictionary of binary attributes."""
         matched_rules = {
-            'Rule{}'.format(index): {
-                'MatchedData': list(sorted(match.matched_data)),  # E.g. "HelloWorld"
-                'MatchedStrings': list(sorted(match.matched_strings)),  # E.g. "$string1"
+            f'Rule{index}': {
+                'MatchedData': list(
+                    sorted(match.matched_data)
+                ),  # E.g. "HelloWorld"
+                'MatchedStrings': list(
+                    sorted(match.matched_strings)
+                ),  # E.g. "$string1"
                 'Meta': match.rule_metadata,
                 'RuleFile': match.rule_namespace,
-                'RuleName': match.rule_name
+                'RuleName': match.rule_name,
             }
             for index, match in enumerate(self.yara_matches, start=1)
         }
+
 
         return {
             'FileInfo': {

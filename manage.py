@@ -10,9 +10,11 @@ from cli.manager import Manager
 
 def main() -> None:
     """Main command dispatcher."""
-    if not (sys.version_info.major == 3 and sys.version_info.minor in {6, 7}):
-        print('ERROR: Python 3.6/7 is required, found Python {}.{}.{}'.format(
-            sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
+    if sys.version_info.major != 3 or sys.version_info.minor not in {6, 7}:
+        print(
+            f'ERROR: Python 3.6/7 is required, found Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}'
+        )
+
         exit(1)
 
     manager = Manager()
@@ -21,7 +23,9 @@ def main() -> None:
     parser.add_argument(
         'command', choices=sorted(manager.commands), help=manager.help, metavar='command')
     parser.add_argument(
-        '--version', action='version', version='BinaryAlert v{}'.format(__version__))
+        '--version', action='version', version=f'BinaryAlert v{__version__}'
+    )
+
     args = parser.parse_args()
 
     os.environ['TF_IN_AUTOMATION'] = '1'

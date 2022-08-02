@@ -37,7 +37,9 @@ class DynamoMatchTableTest(unittest.TestCase):
         self._binary.s3_metadata = {'test-filename': 'test.txt', 'empty-filename': ''}
         self._binary.computed_md5 = 'Computed_MD5'
         self._binary.computed_sha = 'Computed_SHA'
-        self._binary.yara_matches = [YaraMatch('rule_name', 'file.yara', dict(), set(), set())]
+        self._binary.yara_matches = [
+            YaraMatch('rule_name', 'file.yara', {}, set(), set())
+        ]
 
     def test_new_sha(self, mock_table: mock.MagicMock):
         """A binary matches YARA rules for the first time - create DB entry and alert."""
@@ -151,7 +153,9 @@ class DynamoMatchTableTest(unittest.TestCase):
             ]
         }
         self._binary.yara_matches.append(
-            YaraMatch('different_rule_name', 'new_file.yara', dict(), set(), set()))
+            YaraMatch('different_rule_name', 'new_file.yara', {}, set(), set())
+        )
+
 
         needs_alert = match_table.save_matches(self._binary, 2)
 
@@ -179,7 +183,7 @@ class DynamoMatchTableTest(unittest.TestCase):
                 }
             ]
         }
-        self._binary.s3_identifier = 'S3:{}:{}'.format(self._binary.bucket_name, 'NEW_KEY')
+        self._binary.s3_identifier = f'S3:{self._binary.bucket_name}:NEW_KEY'
 
         needs_alert = match_table.save_matches(self._binary, 1)
 
@@ -206,7 +210,9 @@ class DynamoMatchTableTest(unittest.TestCase):
             ]
         }
         self._binary.yara_matches.append(
-            YaraMatch('different_rule_name', 'new_file.yara', dict(), set(), set()))
+            YaraMatch('different_rule_name', 'new_file.yara', {}, set(), set())
+        )
+
         needs_alert = match_table.save_matches(self._binary, 0)
 
         self.assertFalse(needs_alert)  # Don't alert even if there was a change

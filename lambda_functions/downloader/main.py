@@ -71,7 +71,7 @@ def _upload_to_s3(binary: Binary) -> None:
         binary: CarbonBlack binary instance.
     """
     metadata = _build_metadata(binary)
-    s3_object_key = 'carbonblack/{}'.format(binary.md5)
+    s3_object_key = f'carbonblack/{binary.md5}'
     LOGGER.info('Uploading to S3 with key %s', s3_object_key)
     S3_BUCKET.upload_fileobj(binary.file, s3_object_key, ExtraArgs={'Metadata': metadata})
 
@@ -136,12 +136,9 @@ def download_lambda_handler(event: Dict[str, Any], _: Any) -> None:
         }
         _: Unused Lambda context
     """
-    receive_counts = []  # A list of message receive counts.
-
-    for md5, receive_count in _iter_download_records(event):
-        if _process_md5(md5):
-            # File was copied successfully - the receipt can be deleted
-            receive_counts.append(receive_count)
-
-    if receive_counts:
+    if receive_counts := [
+        receive_count
+        for md5, receive_count in _iter_download_records(event)
+        if _process_md5(md5)
+    ]:
         _publish_metrics(receive_counts)

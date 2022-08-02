@@ -67,7 +67,7 @@ def _elide_string_middle(text: str, max_length: int) -> str:
         return text
 
     half_len = (max_length - 5) // 2  # Length of text on either side.
-    return '{} ... {}'.format(text[:half_len], text[-half_len:])
+    return f'{text[:half_len]} ... {text[-half_len:]}'
 
 
 def publish_to_sns(binary: BinaryInfo, topic_arn: str, subject: str) -> None:
@@ -169,16 +169,14 @@ class DynamoMatchTable:
             4-tuple: (AnalyzerVersion, MatchedRules, S3Objects, PreviousS3Objects)
             Returns None if there is no matching item.
         """
-        most_recent_items = self._table.query(
+        if most_recent_items := self._table.query(
             Select='SPECIFIC_ATTRIBUTES',
             Limit=2,  # We only need the most recent analyses.
             ConsistentRead=True,
             ScanIndexForward=False,  # Sort by AnalyzerVersion descending (e.g. newest first).
             ProjectionExpression='AnalyzerVersion,MatchedRules,S3Objects',
-            KeyConditionExpression=Key('SHA256').eq(sha)
-        ).get('Items')
-
-        if most_recent_items:
+            KeyConditionExpression=Key('SHA256').eq(sha),
+        ).get('Items'):
             analyzer_version = int(most_recent_items[0]['AnalyzerVersion'])
             matched_rules = set(most_recent_items[0]['MatchedRules'])
             s3_objects = set(most_recent_items[0]['S3Objects'])

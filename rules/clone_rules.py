@@ -23,10 +23,9 @@ def _copy_required(path: str, include: Optional[List[str]], exclude: Optional[Li
 
     # 3) If the path is not a .yar or .yara file, skip it.
     lower_filename = path.lower()
-    if not lower_filename.endswith('.yar') and not lower_filename.endswith('.yara'):
-        return False
-
-    return True
+    return bool(
+        lower_filename.endswith('.yar') or lower_filename.endswith('.yara')
+    )
 
 
 def _files_to_copy(
@@ -85,11 +84,11 @@ def clone_remote_rules() -> None:
     num_repos = len(rule_sources['repos'])
     total_files_copied = 0
     for count, source in enumerate(rule_sources['repos'], start=1):
-        print('[{}/{}] Cloning {}... '.format(count, num_repos, source['url']), end='', flush=True)
+        print(f"[{count}/{num_repos}] Cloning {source['url']}... ", end='', flush=True)
         files_copied = _clone_repo(source['url'], source.get('include'), source.get('exclude'))
-        print('{} YARA {} copied'.format(files_copied, 'file' if files_copied == 1 else 'files'))
+        print(f"{files_copied} YARA {'file' if files_copied == 1 else 'files'} copied")
         total_files_copied += files_copied
 
-    print('Done! {} YARA {} cloned from {} {}.'.format(
-        total_files_copied, 'file' if total_files_copied == 1 else 'files',
-        num_repos, 'repository' if num_repos == 1 else 'repositories'))
+    print(
+        f"Done! {total_files_copied} YARA {'file' if total_files_copied == 1 else 'files'} cloned from {num_repos} {'repository' if num_repos == 1 else 'repositories'}."
+    )

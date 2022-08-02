@@ -20,14 +20,14 @@ def _upload_test_files_to_s3(bucket_name: str) -> Dict[str, str]:
     result = {}
     for filename in TEST_FILES:
         filepath = os.path.join(TEST_DIR, 'files', filename)
-        s3_object_key = '{}_{}'.format(filename, random_suffix)
-        s3_full_identifier = 'S3:{}:{}'.format(bucket_name, s3_object_key)
+        s3_object_key = f'{filename}_{random_suffix}'
+        s3_full_identifier = f'S3:{bucket_name}:{s3_object_key}'
 
         with open(filepath, 'rb') as f:
             sha256 = hashlib.sha256(f.read()).hexdigest()
         result[sha256] = s3_full_identifier
 
-        print('Uploading {} to {}...'.format(filename, s3_full_identifier))
+        print(f'Uploading {filename} to {s3_full_identifier}...')
         bucket.upload_file(filepath, s3_object_key, ExtraArgs={'Metadata': {'filepath': filename}})
 
     return result
@@ -35,12 +35,16 @@ def _upload_test_files_to_s3(bucket_name: str) -> Dict[str, str]:
 
 def _lambda_production_version(function_name: str) -> int:
     """Find the version associated with the Production alias of a Lambda function."""
-    print('Looking up version of {}:Production...'.format(function_name))
+    print(f'Looking up version of {function_name}:Production...')
     response = boto3.client('lambda').list_aliases(FunctionName=function_name)
-    for alias in response['Aliases']:
-        if alias['Name'] == 'Production':
-            return int(alias['FunctionVersion'])
-    return -1
+    return next(
+        (
+            int(alias['FunctionVersion'])
+            for alias in response['Aliases']
+            if alias['Name'] == 'Production'
+        ),
+        -1,
+    )
 
 
 def _query_dynamo_for_test_files(
@@ -63,8 +67,10 @@ def _query_dynamo_for_test_files(
     for attempt in range(1, max_attempts + 1):
         if attempt > 1:
             time.sleep(5)
-        print('\t[{}/{}] Querying DynamoDB table for the expected YARA match entries...'.format(
-            attempt, max_attempts))
+        print(
+            f'\t[{attempt}/{max_attempts}] Querying DynamoDB table for the expected YARA match entries...'
+        )
+
 
         response = client.batch_get_item(
             RequestItems={
@@ -161,14 +167,12 @@ def run(bucket_name: str, analyzer_function_name: str, table_name: str) -> bool:
 
     if results == expected:
         print('\nSUCCESS: Expected DynamoDB entries for the test files were found!')
-        print(json.dumps(results, sort_keys=True, indent=4))
     else:
         print('\nFAIL: Expected DynamoDB entries for the test files were *not* found :(\n')
         print('Expected Results:')
         print(json.dumps(expected, sort_keys=True, indent=4))
         print('Actual Results:')
-        print(json.dumps(results, sort_keys=True, indent=4))
-
+    print(json.dumps(results, sort_keys=True, indent=4))
     _cleanup(bucket_name, test_file_info, table_name, analyzer_version)
     print('Done!')
     return bool(results)

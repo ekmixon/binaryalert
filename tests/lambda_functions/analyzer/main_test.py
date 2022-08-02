@@ -229,8 +229,8 @@ class MainTest(fake_filesystem_unittest.TestCase):
             ] * 2)
 
         # Verify return value.
-        good_s3_id = 'S3:{}:{}'.format(MOCK_S3_BUCKET_NAME, GOOD_S3_OBJECT_KEY)
-        evil_s3_id = 'S3:{}:{}'.format(MOCK_S3_BUCKET_NAME, EVIL_S3_OBJECT_KEY)
+        good_s3_id = f'S3:{MOCK_S3_BUCKET_NAME}:{GOOD_S3_OBJECT_KEY}'
+        evil_s3_id = f'S3:{MOCK_S3_BUCKET_NAME}:{EVIL_S3_OBJECT_KEY}'
         expected = {
             good_s3_id: {
                 'FileInfo': {

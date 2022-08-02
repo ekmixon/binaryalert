@@ -48,13 +48,18 @@ def _convert_yextend_to_yara_match(yextend_json: Dict[str, Any]) -> List[YaraMat
 
         # Note: Yextend does not report rule namespaces nor the match data
         rule_namespace = 'yextend'
-        matched_strings = set(
-            x.split(':')[1] for x in result.get('detected offsets', []) if ':' in x)
+        matched_strings = {
+            x.split(':')[1]
+            for x in result.get('detected offsets', [])
+            if ':' in x
+        }
 
-        rule_metadata = {}
-        for key, value in result.items():
-            if key not in _YEXTEND_RESULT_KEYS:
-                rule_metadata[key] = value
+
+        rule_metadata = {
+            key: value
+            for key, value in result.items()
+            if key not in _YEXTEND_RESULT_KEYS
+        }
 
         matches.append(YaraMatch(rule_name, rule_namespace, rule_metadata, matched_strings, set()))
 
@@ -91,10 +96,10 @@ class YaraAnalyzer:
         file_name = os.path.basename(original_target_path)
         file_suffix = file_name.split('.')[-1] if '.' in file_name else ''  # e.g. "exe" or "rar".
         return {
-            'extension': '.' + file_suffix if file_suffix else '',
+            'extension': f'.{file_suffix}' if file_suffix else '',
             'filename': file_name,
             'filepath': original_target_path,
-            'filetype': file_suffix.upper()  # Used in only one rule (checking for "GIF").
+            'filetype': file_suffix.upper(),
         }
 
     def _yextend_matches(self, target_file: str) -> List[YaraMatch]:

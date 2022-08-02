@@ -32,11 +32,7 @@ def get_input(prompt: str, default_value: str,
     Returns:
         Lowercase user input, stripped of extra spaces, or the default value if no input was given
     """
-    if default_value:
-        prompt = '{} ({}): '.format(prompt, default_value)
-    else:
-        prompt = '{}: '.format(prompt)
-
+    prompt = f'{prompt} ({default_value}): ' if default_value else f'{prompt}: '
     # Keep requesting user input until it is valid
     while True:
         user_input = input(prompt).strip().lower() or default_value
@@ -45,7 +41,7 @@ def get_input(prompt: str, default_value: str,
                 setattr(config, property_name, user_input)
                 break
             except InvalidConfigError as error:
-                print('ERROR: {}'.format(error))
+                print(f'ERROR: {error}')
         elif user_input in {'yes', 'no'}:
             break
         else:
@@ -80,7 +76,7 @@ class BinaryAlertConfig:
             # Verify that the variable is defined.
             if variable not in self._config:
                 raise InvalidConfigError(
-                    'variable "{}" is not defined in {}'.format(variable, CONFIG_FILE)
+                    f'variable "{variable}" is not defined in {CONFIG_FILE}'
                 )
 
     @property
@@ -91,9 +87,9 @@ class BinaryAlertConfig:
     def aws_account_id(self, value: str) -> None:
         if not re.fullmatch(self.VALID_AWS_ACCOUNT_ID_FORMAT, value, re.ASCII):
             raise InvalidConfigError(
-                'aws_account_id "{}" does not match format {}'.format(
-                    value, self.VALID_AWS_ACCOUNT_ID_FORMAT)
+                f'aws_account_id "{value}" does not match format {self.VALID_AWS_ACCOUNT_ID_FORMAT}'
             )
+
         self._config['aws_account_id'] = value
 
     @property
@@ -104,9 +100,9 @@ class BinaryAlertConfig:
     def aws_region(self, value: str) -> None:
         if not re.fullmatch(self.VALID_AWS_REGION_FORMAT, value, re.ASCII):
             raise InvalidConfigError(
-                'aws_region "{}" does not match format {}'.format(
-                    value, self.VALID_AWS_REGION_FORMAT)
+                f'aws_region "{value}" does not match format {self.VALID_AWS_REGION_FORMAT}'
             )
+
         self._config['aws_region'] = value
 
     @property
@@ -117,9 +113,9 @@ class BinaryAlertConfig:
     def name_prefix(self, value: str) -> None:
         if not re.fullmatch(self.VALID_NAME_PREFIX_FORMAT, value, re.ASCII):
             raise InvalidConfigError(
-                'name_prefix "{}" does not match format {}'.format(
-                    value, self.VALID_NAME_PREFIX_FORMAT)
+                f'name_prefix "{value}" does not match format {self.VALID_NAME_PREFIX_FORMAT}'
             )
+
         self._config['name_prefix'] = value
 
     @property
@@ -130,8 +126,9 @@ class BinaryAlertConfig:
     def enable_carbon_black_downloader(self, value: bool) -> None:
         if not isinstance(value, bool):
             raise InvalidConfigError(
-                'enable_carbon_black_downloader "{}" must be a boolean.'.format(value)
+                f'enable_carbon_black_downloader "{value}" must be a boolean.'
             )
+
         self._config['enable_carbon_black_downloader'] = value
 
     @property
@@ -142,9 +139,9 @@ class BinaryAlertConfig:
     def carbon_black_url(self, value: str) -> None:
         if not re.fullmatch(self.VALID_CB_URL_FORMAT, value, re.ASCII):
             raise InvalidConfigError(
-                'carbon_black_url "{}" does not match format {}'.format(
-                    value, self.VALID_CB_URL_FORMAT)
+                f'carbon_black_url "{value}" does not match format {self.VALID_CB_URL_FORMAT}'
             )
+
         self._config['carbon_black_url'] = value
 
     @property
@@ -156,7 +153,7 @@ class BinaryAlertConfig:
         try:
             int_value = int(value)
         except ValueError:
-            raise InvalidConfigError('carbon_black_timeout "{}" is not an integer'.format(value))
+            raise InvalidConfigError(f'carbon_black_timeout "{value}" is not an integer')
         self._config['carbon_black_timeout'] = int_value
 
     @property
@@ -167,10 +164,9 @@ class BinaryAlertConfig:
     def encrypted_carbon_black_api_token(self, value: str) -> None:
         if not re.fullmatch(self.VALID_CB_ENCRYPTED_TOKEN_FORMAT, value, re.ASCII):
             raise InvalidConfigError(
-                'encrypted_carbon_black_api_token "{}" does not match format {}'.format(
-                    value, self.VALID_CB_ENCRYPTED_TOKEN_FORMAT
-                )
+                f'encrypted_carbon_black_api_token "{value}" does not match format {self.VALID_CB_ENCRYPTED_TOKEN_FORMAT}'
             )
+
         self._config['encrypted_carbon_black_api_token'] = value
 
     @property
@@ -184,25 +180,23 @@ class BinaryAlertConfig:
 
     @property
     def binaryalert_analyzer_name(self) -> str:
-        return '{}_binaryalert_analyzer'.format(self.name_prefix)
+        return f'{self.name_prefix}_binaryalert_analyzer'
 
     @property
     def binaryalert_analyzer_queue_name(self) -> str:
-        return '{}_binaryalert_analyzer_queue'.format(self.name_prefix)
+        return f'{self.name_prefix}_binaryalert_analyzer_queue'
 
     @property
     def binaryalert_downloader_queue_name(self) -> str:
-        return '{}_binaryalert_downloader_queue'.format(self.name_prefix)
+        return f'{self.name_prefix}_binaryalert_downloader_queue'
 
     @property
     def binaryalert_dynamo_table_name(self) -> str:
-        return '{}_binaryalert_matches'.format(self.name_prefix)
+        return f'{self.name_prefix}_binaryalert_matches'
 
     @property
     def binaryalert_s3_bucket_name(self) -> str:
-        return '{}.binaryalert-binaries.{}'.format(
-            self.name_prefix.replace('_', '.'), self.aws_region
-        )
+        return f"{self.name_prefix.replace('_', '.')}.binaryalert-binaries.{self.aws_region}"
 
     @property
     def retro_batch_size(self) -> int:
@@ -220,9 +214,10 @@ class BinaryAlertConfig:
             if re.fullmatch(self.VALID_CB_API_TOKEN_FORMAT, api_token, re.ASCII):
                 break
             else:
-                print('ERROR: {}-character input does not match expected token format {}'.format(
-                    len(api_token), self.VALID_CB_API_TOKEN_FORMAT
-                ))
+                print(
+                    f'ERROR: {len(api_token)}-character input does not match expected token format {self.VALID_CB_API_TOKEN_FORMAT}'
+                )
+
 
         # We need the KMS key to encrypt the API token.
         # The same key will be used by the downloader to decrypt the API token at runtime.
@@ -235,9 +230,10 @@ class BinaryAlertConfig:
 
         print('Encrypting API token...')
         response = boto3.client('kms').encrypt(
-            KeyId='alias/{}_binaryalert_carbonblack_credentials'.format(self.name_prefix),
-            Plaintext=api_token
+            KeyId=f'alias/{self.name_prefix}_binaryalert_carbonblack_credentials',
+            Plaintext=api_token,
         )
+
         self.encrypted_carbon_black_api_token = base64.b64encode(
             response['CiphertextBlob']).decode('utf-8')
 
@@ -302,17 +298,18 @@ class BinaryAlertConfig:
 
         for variable_name, value in self._config.items():
             if isinstance(value, str):
-                formatted_value = '"{}"'.format(value)
+                formatted_value = f'"{value}"'
             elif isinstance(value, bool):
                 formatted_value = str(value).lower()
             else:
                 formatted_value = value
 
             raw_config = re.sub(
-                r'{}\s*=\s*\S+'.format(variable_name),
-                '{} = {}'.format(variable_name, formatted_value),
-                raw_config
+                f'{variable_name}\s*=\s*\S+',
+                f'{variable_name} = {formatted_value}',
+                raw_config,
             )
+
 
         with open(CONFIG_FILE, 'w') as config_file:
             config_file.write(raw_config)

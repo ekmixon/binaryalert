@@ -29,11 +29,13 @@ def _build_function(function_name: str, target_directory: str,
         pre_zip_func: Optional custom code to run before zipping up the final package
             The function will be given a single argument: the package root in /tmp
     """
-    print('Creating {} deploy package...'.format(function_name))
+    print(f'Creating {function_name} deploy package...')
 
     # Create a temporary directory for building the Lambda function.
     temp_package_dir = os.path.join(
-        tempfile.gettempdir(), 'binaryalert_{}.pkg'.format(function_name))
+        tempfile.gettempdir(), f'binaryalert_{function_name}.pkg'
+    )
+
     if os.path.exists(temp_package_dir):
         shutil.rmtree(temp_package_dir)
 
@@ -66,8 +68,11 @@ def _build_function(function_name: str, target_directory: str,
         pre_zip_func(temp_package_dir)
 
     # Zip up the final package.
-    shutil.make_archive(os.path.join(target_directory, 'lambda_' + function_name),
-                        'zip', temp_package_dir)
+    shutil.make_archive(
+        os.path.join(target_directory, f'lambda_{function_name}'),
+        'zip',
+        temp_package_dir,
+    )
 
 
 def _build_analyzer_callback(temp_package_dir: str) -> None:

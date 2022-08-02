@@ -60,9 +60,9 @@ class Manager:
                 self._config.validate()
             getattr(self, command)()  # Command validation already happened in the ArgumentParser.
         except InvalidConfigError as error:
-            sys.exit('ERROR: {}\nPlease run "python3 manage.py configure"'.format(error))
+            sys.exit(f'ERROR: {error}\nPlease run "python3 manage.py configure"')
         except TestFailureError as error:
-            sys.exit('TEST FAILED: {}'.format(error))
+            sys.exit(f'TEST FAILED: {error}')
 
     @staticmethod
     def _enqueue(
@@ -131,7 +131,7 @@ class Manager:
         if not self._config.enable_carbon_black_downloader:
             raise InvalidConfigError('CarbonBlack downloader is not enabled.')
 
-        print('Connecting to CarbonBlack server {} ...'.format(self._config.carbon_black_url))
+        print(f'Connecting to CarbonBlack server {self._config.carbon_black_url} ...')
         carbon_black = cbapi.CbResponseAPI(
             url=self._config.carbon_black_url,
             timeout=self._config.carbon_black_timeout,
@@ -153,7 +153,7 @@ class Manager:
     def compile_rules() -> None:
         """Compile all of the YARA rules into a single binary file"""
         compile_rules.compile_rules(COMPILED_RULES_FILENAME)
-        print('Compiled rules saved to {}'.format(COMPILED_RULES_FILENAME))
+        print(f'Compiled rules saved to {COMPILED_RULES_FILENAME}')
 
     def configure(self) -> None:
         """Update basic configuration, including region, prefix, and downloader settings"""
@@ -213,8 +213,8 @@ class Manager:
             Object key for the most recent inventory manifest.
             Returns None if no inventory report was found from the last 8 days
         """
-        today = datetime.today()
-        inv_prefix = 'inventory/{}/EntireBucketDaily'.format(bucket.name)
+        today = datetime.now()
+        inv_prefix = f'inventory/{bucket.name}/EntireBucketDaily'
 
         # Check for each day, starting today, up to 3 days ago
         for days_ago in range(4):
@@ -282,7 +282,7 @@ class Manager:
     def _s3_msg_summary(sqs_message: Dict[str, Any]) -> Tuple[int, str]:
         """Return a short summary string about this SQS message"""
         last_key = sqs_message['Records'][-1]['s3']['object']['key']
-        summary = last_key if len(last_key) <= 80 else '...{}'.format(last_key[-80:])
+        summary = last_key if len(last_key) <= 80 else f'...{last_key[-80:]}'
         return len(sqs_message['Records']), summary
 
     def retro_fast(self) -> None:
@@ -295,7 +295,7 @@ class Manager:
             print('You can run "./manage.py retro_slow" to manually enumerate the bucket')
             return
 
-        print('Reading {}'.format(manifest_path))
+        print(f'Reading {manifest_path}')
         self._enqueue(
             self._config.binaryalert_analyzer_queue_name,
             self._s3_batch_iterator(self._inventory_object_iterator(bucket, manifest_path)),

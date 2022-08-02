@@ -22,9 +22,7 @@ def mock_input(prompt: str) -> str:
         return 'https://new-example.com'
     if prompt.startswith('Change the CarbonBlack API token'):
         return 'yes'
-    if prompt.startswith('Delete all S3 objects'):
-        return 'yes'
-    return 'UNKNOWN'
+    return 'yes' if prompt.startswith('Delete all S3 objects') else 'UNKNOWN'
 
 
 class FakeFilesystemBase(fake_filesystem_unittest.TestCase):
@@ -40,18 +38,22 @@ class FakeFilesystemBase(fake_filesystem_unittest.TestCase):
             encrypted_api_token: str = 'A'*100):
         """Create terraform.tfvars file with the given configuration values."""
         with open(CONFIG_FILE, 'w') as config_file:
-            config_file.write('\n'.join([
-                '// comment1',
-                'aws_account_id = "{}"'.format(account_id),
-                'aws_region = "{}" // comment2'.format(region),
-                'name_prefix = "{}" // comment3'.format(prefix),
-                'enable_carbon_black_downloader = {}'.format(str(enable_downloader).lower()),
-                'carbon_black_url = "{}" //comment4'.format(cb_url),
-                'encrypted_carbon_black_api_token = "{}"'.format(encrypted_api_token),
-                'force_destroy = false',
-                'objects_per_retro_message = 5',
-                '// comment5'
-            ]))
+            config_file.write(
+                '\n'.join(
+                    [
+                        '// comment1',
+                        f'aws_account_id = "{account_id}"',
+                        f'aws_region = "{region}" // comment2',
+                        f'name_prefix = "{prefix}" // comment3',
+                        f'enable_carbon_black_downloader = {str(enable_downloader).lower()}',
+                        f'carbon_black_url = "{cb_url}" //comment4',
+                        f'encrypted_carbon_black_api_token = "{encrypted_api_token}"',
+                        'force_destroy = false',
+                        'objects_per_retro_message = 5',
+                        '// comment5',
+                    ]
+                )
+            )
 
     def setUp(self):
         """Enable pyfakefs and write out Terraform config files."""

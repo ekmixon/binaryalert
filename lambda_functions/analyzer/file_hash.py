@@ -16,8 +16,7 @@ def _read_in_chunks(file_object: IO[bytes], chunk_size: int = 2*MB) -> Generator
         File chunks, each of size at most chunk_size.
     """
     while True:
-        chunk = file_object.read(chunk_size)
-        if chunk:
+        if chunk := file_object.read(chunk_size):
             yield chunk
         else:
             return  # End of file.
